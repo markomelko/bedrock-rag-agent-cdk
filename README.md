@@ -25,6 +25,12 @@ Show how to create a RAG-based AI assistant using Amazon Bedrock and a Knowledge
 - ```cdk destroy``` – destroys the stack and removes all resources
 - ```cdk diff``` – shows the differences between the deployed stack and the local stack
 
+## Bedrock Foundation Model
+
+Amazon Bedrock provides access to a variety of foundation models (FM) from leading AI companies.
+
+This project offers anthropic.claude-3-sonnet-20240229-v1:0 as the default FM, but you can easily switch to another FM by changing the model ID in the Stack and Lambda code. Check models schema [here](https://docs.aws.amazon.com/bedrock/latest/devguide/bedrock-models.html) for the latest available models. Check also that models are available and enabled in your AWS region.
+
 ## Security
 
 **The selected FM model does not learn from your data.** Content in the Knowledge Base is not used to train the foundation model. Amazon Bedrock guarantees that customer-provided documents remain private and are not shared, stored, or used for training any underlying model. For sensitive data use cases, configure S3 permissions, VPC access, and API security appropriately.
@@ -56,8 +62,8 @@ Just wanted to write that down, because I have seen some people being worried ab
 
 ### Bedrock-integration
 
-- [ ] 8. Initialize / study Bedrock connection from Lambda
-- [ ] 9. Create Lambda logic to call Bedrock Claude with constructed prompt
+- [x] 8. Initialize / study Bedrock connection from Lambda
+- [x] 9. Create Lambda logic to call Bedrock Claude with constructed prompt
 - [ ] 10. Test Bedrock-powered Lambda with real markdown content via Postman
 - [ ] 11. Add environment variables (model ID, bucket name, etc.)
 

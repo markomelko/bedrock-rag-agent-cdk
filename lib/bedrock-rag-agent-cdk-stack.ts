@@ -5,6 +5,8 @@ import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 
+import * as iam from "aws-cdk-lib/aws-iam";
+
 import { addCorsOptions } from '../utils/cors-utils';
 
 
@@ -68,5 +70,12 @@ export class BedrockRagAgentCdkStack extends cdk.Stack {
 
     // Grant read-only access for Lambda to the S3 knowledge base
     documentBucket.grantRead(requestHandler);
+
+    requestHandler.addToRolePolicy(new iam.PolicyStatement({
+      actions: ['bedrock:InvokeModel'],
+      resources: [
+        'arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0'
+      ]
+    }));
   }
 }
