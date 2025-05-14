@@ -44,40 +44,41 @@ Just wanted to write that down, because I have seen some people being worried ab
 ### Basic infra
 
 - [x] 1. Create empty AWS CDK project
-- [ ] 2. Create empty Lambda function that responds with "Hello World"
-- [ ] 3. Create API Gateway endpoint with API key protection
-- [ ] 4. Test API Gateway with Postman
+- [x] 2. Create empty Lambda function that responds with "Hello World"
+- [x] 3. Create API Gateway endpoint with API key protection
+- [x] 4. Test API Gateway with Postman
 
 ### Knowledge base and S3
 
-- [ ] 5. Create S3 bucket for knowledge base markdown documents
-- [ ] 6. Allow Lambda to access S3 bucket and fetch documents
+- [x] 5. Create S3 bucket for knowledge base markdown documents
+- [x] 6. Allow Lambda to access S3 bucket and fetch documents
 - [ ] 7. Plan logic for selecting topic-based document (e.g. "your-skills.md")
 
 ### Bedrock-integration
 
-- [ ] 8. Create Lambda logic to call Bedrock Claude with constructed prompt
-- [ ] 9. Test Bedrock-powered Lambda with real markdown content via Postman
-- [ ] 10. Add environment variables (model ID, bucket name, etc.)
+- [ ] 8. Initialize / study Bedrock connection from Lambda
+- [ ] 9. Create Lambda logic to call Bedrock Claude with constructed prompt
+- [ ] 10. Test Bedrock-powered Lambda with real markdown content via Postman
+- [ ] 11. Add environment variables (model ID, bucket name, etc.)
 
 ### Testing and scaling
 
-- [ ] 11. Add support for `topic` and `language` in request payload
-- [ ] 12. Test multiple topics and multilingual responses
-- [ ] 13. Add fallback/error response handling
+- [ ] 12. Add support for `topic` and `language` in request payload
+- [ ] 13. Test multiple topics and multilingual responses
+- [ ] 14. Add fallback/error response handling
 
 ### UI
 
-- [ ] 14. Create lightweight React UI for asking questions
-- [ ] 15. Add selection for topic and response language in UI
-- [ ] 16. Host UI in S3 static website
-- [ ] 17. Serve UI through CloudFront with HTTPS (optional)
+- [ ] 15. Create lightweight React UI for asking questions
+- [ ] 16. Add selection for topic and response language in UI
+- [ ] 17. Host UI in S3 static website
+- [ ] 18. Serve UI through CloudFront with HTTPS (optional)
 
 ### Docs
 
-- [ ] 18. Draw architecture diagram (e.g. draw.io)
-- [ ] 19. Add architecture image to README
-- [ ] 20. Add usage instructions (API usage + UI usage)
+- [ ] 19. Draw architecture diagram (e.g. draw.io)
+- [ ] 20. Add architecture image to README
+- [ ] 21. Add usage instructions (API usage + UI usage)
 
 
 
