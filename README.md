@@ -19,6 +19,12 @@ Show how to create a RAG-based AI assistant using Amazon Bedrock and a Knowledge
 - **Amazon CloudFront** (optional) – serves the UI with HTTPS
 - **S3 UI client** (optional) – hosts the UI
 
+## Deployment with AWS CDK
+- ```cdk synth``` – synthesizes the CloudFormation template
+- ```cdk deploy``` – deploys the stack to your AWS account
+- ```cdk destroy``` – destroys the stack and removes all resources
+- ```cdk diff``` – shows the differences between the deployed stack and the local stack
+
 ## Security
 
 **The selected FM model does not learn from your data.** Content in the Knowledge Base is not used to train the foundation model. Amazon Bedrock guarantees that customer-provided documents remain private and are not shared, stored, or used for training any underlying model. For sensitive data use cases, configure S3 permissions, VPC access, and API security appropriately.
@@ -30,7 +36,7 @@ Just wanted to write that down, because I have seen some people being worried ab
 1. Create an AWS account, make also sure you don't use ROOT user, because it's not a good practice. This is maybe the bigges part of the setup, because you need to provide your credit card information. If you have an existing AWS account, create IAM user to have programmatic access to AWS services
 2. Install AWS CLI if you don't have it already. You can find the installation instructions [here](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html). You can use Homebrew too if you are on MacOS: ```brew install awscli```
 3. Configure AWS CLI with your credentials ```aws configure``` 
-4. ..
+4. Before running deployments, make sure to run ```cdk bootstrap aws://<account-id>/<region>``` to set up the environment for CDK. This command sets up the necessary resources for CDK to deploy your stack, such as an S3 bucket for storing assets and a CloudFormation execution role.
 5. ..
 
 ## In Progress
