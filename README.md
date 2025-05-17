@@ -76,20 +76,19 @@ Just wanted to write that down, because I have seen some people being worried ab
 
 ### Testing and scaling
 
-- [ ] 12. Create unit tests for Lambda function
-- [ ] 13. Create integration tests for API Gateway
+- [ ] 12. Create unit tests for eact Lambda function
 
 ### UI (optional, not to this repo)
 
-- [ ] 15. Create lightweight NextJs UI for rendering the assistant
-- [ ] 16. Add selection for topic and response language in UI
-- [ ] 17. Host UI in S3 static website
-- [ ] 18. Serve UI through CloudFront with HTTPS (optional)
+- [ ] 13. Create lightweight NextJs UI for rendering the assistant
+- [ ] 14. Add selection for topic and response language in UI
+- [ ] 15. Host UI in S3 static website
+- [ ] 16. Serve UI through CloudFront with HTTPS (optional)
 
 ### Docs 
 
-- [x] 19. Draw architecture diagram (e.g. draw.io)
-- [x] 20. Add architecture image to README
+- [x] 17. Draw architecture diagram (e.g. draw.io)
+- [x] 18. Add architecture image to README
 
 
 ## License
