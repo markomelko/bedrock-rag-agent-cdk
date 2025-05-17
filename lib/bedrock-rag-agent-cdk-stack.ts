@@ -74,7 +74,7 @@ export class BedrockRagAgentCdkStack extends cdk.Stack {
     requestHandler.addToRolePolicy(new iam.PolicyStatement({
       actions: ['bedrock:InvokeModel'],
       resources: [
-        'arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0'
+        'arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-text-premier-v1:0'
       ]
     }));
   }
