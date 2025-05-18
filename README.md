@@ -12,6 +12,8 @@ There is few development notes and ideas in the code, hard to keep hands off fro
 
 - Note: Some of models (FMs) are not available in all AWS regions, so make sure to check the availability of the models in your region. Note that e.g. Claude can be pretty needy for context, so you might need to use a different model if you have a lot of content in your knowledge base. Find more information from Titan models from [here](https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-titan.html).
 
+- Note: You maybe need to request access to wanted FM, use AWS console to do that. You can find the models from the AWS console (Bedrock/Models..). If you don't have access e.g. to default model, you can request it from the AWS console. Better to select one, so you can start testing the project and have no pressure to get too much cost from the models. Remember also to use us-east-1 region, because the models are not available in all regions.
+
 ## Architecture (WIP)
 
 ![high-level-plans](./docs/idea-bedrock-rag-agent-cdk.jpg)
