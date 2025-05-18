@@ -60,6 +60,16 @@ export class BedrockRagAgentCdkStack extends cdk.Stack {
       },
     });
 
+    // Lambda to get marked prompts from DynamoDB
+    const getPromptsHandler = new lambda.Function(this, 'GetPromptsHandlerFunction', {
+      runtime: lambda.Runtime.NODEJS_20_X,
+      code: lambda.Code.fromAsset('lambda/getPromptsHandler'),
+      handler: 'handler.handler',
+      environment: {
+        MODEL_RESPONSES_TABLE: modelResponsesTable.tableName,
+      },
+    });
+
     // Lambda function to handle inquiries and store them to the DynamoDB
     const inquiriesHandler = new lambda.Function(this, 'InquiriesHandlerFunction', {
       runtime: lambda.Runtime.NODEJS_20_X,
@@ -72,9 +82,14 @@ export class BedrockRagAgentCdkStack extends cdk.Stack {
 
     // Link API Gateway - Lambda function
     const promptIntegration = new apigateway.LambdaIntegration(promptHandler);
+    const getPromptsIntegration = new apigateway.LambdaIntegration(getPromptsHandler);
     const inquiriesIntegration = new apigateway.LambdaIntegration(inquiriesHandler);
 
     promptResource.addMethod('POST', promptIntegration, {
+      apiKeyRequired: true,
+    });
+
+    promptResource.addMethod('GET', getPromptsIntegration, {
       apiKeyRequired: true,
     });
 
@@ -106,6 +121,7 @@ export class BedrockRagAgentCdkStack extends cdk.Stack {
     // Grant write access for Lambda to the DynamoDB inquiries table
     inquiriesTable.grantWriteData(inquiriesHandler);
     modelResponsesTable.grantWriteData(promptHandler);
+    modelResponsesTable.grantReadData(getPromptsHandler);
 
     // Grant permissions for the Lambda function to invoke Bedrock models
     promptHandler.addToRolePolicy(new iam.PolicyStatement({

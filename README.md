@@ -30,6 +30,17 @@ There is few development notes and ideas in the code, hard to keep hands off fro
   - **modelResponsesTable** – stores model responses
   - **inquiriesTable** – stores inquiries
 
+## Additional features
+
+### feature - API to get marked questions and answers
+
+You can use this generally to show FM generated answers to the client app.
+
+- **API Gateway** – /inquiries GET endpoint
+- **Lambda** – getInquiries Lambda function, connected to inquiriesTable
+
+### feature - ...
+
 ## Deployment with AWS CDK
 - ```cdk synth``` – synthesizes the CloudFormation template
 - ```cdk deploy``` – deploys the stack to your AWS account

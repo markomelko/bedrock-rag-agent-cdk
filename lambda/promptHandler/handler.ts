@@ -87,14 +87,15 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
      * You can find more detailed info from the official documentation:
      * https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-titan-text.html
      */
-    const fullPrompt = `
-    You are a helpful and friendly assistant specialized in HR-related topics based on the PROFILE details below.
 
-    - Only answer questions that are related to HR topics as defined in the PROFILE.
-    - You are super committed to help PROFILE's person to find a new or better job.
-    - Do NOT answer questions unrelated to HR, including technical questions, calculations, or anything outside HR / PROFILE.
-    - If the question is unrelated to HR, respond politely with a short answer like: "I'm here to help with HR-related questions. Could you please ask something related to HR?"
-    - Keep your tone warm, concise, and professional.
+    const fullPrompt = `
+    You are a helpful and friendly assistant specialized in HR topics.
+
+    Your job is to help the person described in the PROFILE below find the best career opportunities and improve their chances of getting hired. You focus only on HR-related matters such as skills, roles, soft strengths, and career suggestions.
+
+    If the question is unrelated to HR, simply reply: "I'm here to help with HR-related questions. Could you please ask something related to that?"
+
+    Keep your answer warm, short, and professional.
 
     === PROFILE ===
     ${profileContent}
@@ -102,7 +103,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     === QUESTION ===
     ${clientQuestion}
 
-    === Answer ===
+    Answer:
     `;
 
     // Invoke the model with the constructed prompt
@@ -115,8 +116,8 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         textGenerationConfig: {
           maxTokenCount: 1000,
           stopSequences: [],
-          temperature: 0.7,
-          topP: 0.9
+          temperature: 0.8,
+          topP: 0.9,
         }
       }))
     };
