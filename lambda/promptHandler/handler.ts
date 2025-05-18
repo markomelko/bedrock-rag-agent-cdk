@@ -36,6 +36,7 @@ function streamToString(stream: Readable): Promise<string> {
 /**
  * Lambda function to handle API Gateway requests
  * and interact with Bedrock Foundation Model.
+ * Store the responses tp the DynamoDB.
  * @param event - API Gateway event
  * @returns 
  */
@@ -104,9 +105,6 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     === Answer ===
     `;
 
-    // Store the full prompt in the console for debugging
-    console.log("Bedrock assistant fullPrompt:", fullPrompt);
-
     // Invoke the model with the constructed prompt
     const input = {
       modelId: "amazon.titan-text-premier-v1:0",
@@ -128,11 +126,6 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     const rawOutput = new TextDecoder().decode(response.body);
     const parsed = JSON.parse(rawOutput);
     const answer = parsed.results?.[0]?.outputText?.trim() || "No response from model.";
-
-    // Log the response for debugging and for development purposes
-    console.log("Bedrock assistant response:", response);
-    console.log("Bedrock assistant answer:", parsed);
-
     const requestId = response?.$metadata?.requestId;
 
     if (!requestId) {
@@ -140,7 +133,6 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     }
 
     // Store the Question and answer in DynamoDB
-    // There is data to store, store it in DynamoDB
     await client.send(new PutItemCommand({
       TableName: modelResponsesTable,
       Item: marshall({
