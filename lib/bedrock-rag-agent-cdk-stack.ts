@@ -10,7 +10,6 @@ import * as iam from "aws-cdk-lib/aws-iam";
 
 import { addCorsOptions } from '../utils/cors-utils';
 
-
 export class BedrockRagAgentCdkStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -22,7 +21,7 @@ export class BedrockRagAgentCdkStack extends cdk.Stack {
 
     // Resources for the ragApi
     const promptResource = ragApi.root.addResource('prompt');
-    const inquiriesResource = ragApi.root.addResource('inquiries'); // ** Optional **
+    const inquiriesResource = ragApi.root.addResource('inquiries');
 
     // API Key protection for accessing the endpoint
     const apiKey = new apigateway.ApiKey(this, 'RagApiKey', {
@@ -33,10 +32,9 @@ export class BedrockRagAgentCdkStack extends cdk.Stack {
     // S3 bucket used as a file-based knowledge base
     const documentBucket = new s3.Bucket(this, 'KnowledgeBaseBucket', {
       versioned: true,
-      removalPolicy: cdk.RemovalPolicy.RETAIN, // change to DESTROY for dev/demo use
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
 
-    // ** Optional **
     // DynamoDB table to store user inquiries
     const inquiriesTable = new dynamodb.Table(this, 'InquiriesTable', {
       partitionKey: { name: 'inquiriesTimeStamp', type: dynamodb.AttributeType.STRING },
@@ -44,7 +42,6 @@ export class BedrockRagAgentCdkStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY, // or RETAIN for production
     });
 
-    // ** Optional **
     // DynamoDB to store FM responses as ModelResponses
     const modelResponsesTable = new dynamodb.Table(this, 'ModelResponsesTable', {
       partitionKey: { name: 'modelResponseId', type: dynamodb.AttributeType.STRING },
@@ -63,8 +60,7 @@ export class BedrockRagAgentCdkStack extends cdk.Stack {
       },
     });
 
-    // ** Optional **
-    // Lambda function to handle inquiries and store them in DynamoDB
+    // Lambda function to handle inquiries and store them to the DynamoDB
     const inquiriesHandler = new lambda.Function(this, 'InquiriesHandlerFunction', {
       runtime: lambda.Runtime.NODEJS_20_X,
       code: lambda.Code.fromAsset('lambda/inquiriesHandler'),
@@ -76,20 +72,19 @@ export class BedrockRagAgentCdkStack extends cdk.Stack {
 
     // Link API Gateway - Lambda function
     const promptIntegration = new apigateway.LambdaIntegration(promptHandler);
-    const inquiriesIntegration = new apigateway.LambdaIntegration(inquiriesHandler); // ** Optional **
+    const inquiriesIntegration = new apigateway.LambdaIntegration(inquiriesHandler);
 
     promptResource.addMethod('POST', promptIntegration, {
       apiKeyRequired: true,
     });
 
-    // ** Optional **
     inquiriesResource.addMethod('POST', inquiriesIntegration, {
       apiKeyRequired: true,
     });
 
     // Add CORS support for UI or cross-origin requests
     addCorsOptions(promptResource);
-    addCorsOptions(inquiriesResource); // ** Optional **
+    addCorsOptions(inquiriesResource);
 
     // Define throttling and attach the API key to the usage plan, this is for all endpoints.
     const usagePlan = ragApi.addUsagePlan('RagUsagePlan', {
@@ -108,7 +103,6 @@ export class BedrockRagAgentCdkStack extends cdk.Stack {
     // Grant read-only access for Lambda to the S3 knowledge base
     documentBucket.grantRead(promptHandler);
 
-    // ** Optional **
     // Grant write access for Lambda to the DynamoDB inquiries table
     inquiriesTable.grantWriteData(inquiriesHandler);
     modelResponsesTable.grantWriteData(promptHandler);

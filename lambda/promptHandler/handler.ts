@@ -157,7 +157,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     };
 
   } catch (err: any) {
-    console.error("You application error:", err);
+    console.error("RAG application error:", err);
 
     // Store failed request in DynamoDB for debugging and development purposes
     await client.send(new PutItemCommand({

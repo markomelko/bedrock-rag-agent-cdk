@@ -15,7 +15,6 @@ const client = new DynamoDBClient({ region: "us-east-1" });
  */
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
-
     const inquiriesTable = process.env.RESPONSE_TABLE;
 
     if (!inquiriesTable) {
@@ -66,7 +65,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     };
 
   } catch (err: any) {
-    console.error("Application error:", err);
+    console.error("RAG application error:", err);
     return {
       statusCode: 500,
       headers: {
