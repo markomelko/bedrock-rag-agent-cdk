@@ -14,6 +14,11 @@ import {
   APIGatewayProxyResult
 } from "aws-lambda";
 
+import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
+import { marshall } from "@aws-sdk/util-dynamodb";
+
+const client = new DynamoDBClient({ region: "us-east-1" });
+
 const region = "us-east-1";
 const bedrock = new BedrockRuntimeClient({ region });
 const s3 = new S3Client({ region });
@@ -35,13 +40,22 @@ function streamToString(stream: Readable): Promise<string> {
  * @returns 
  */
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  try {
-    const bucket = process.env.S3_BUCKET;
-    const key = "profiledetails.txt";
+  const bucket = process.env.S3_BUCKET;
+  const key = "profiledetails.txt"; // Could be dynamic based on the requests
 
-    if (!bucket) {
-      throw new Error("S3_BUCKET environment variable is not set.");
-    }
+  let clientQuestion = "";
+
+  if (!bucket) {
+    throw new Error("S3_BUCKET environment variable is not set.");
+  }
+
+  const modelResponsesTable = process.env.MODEL_RESPONSES_TABLE;
+
+  if (!modelResponsesTable) {
+    throw new Error("MODEL_RESPONSES_TABLE environment variable is not set.");
+  }
+
+  try {
 
     // Get profile content from S3
     const object = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
@@ -54,7 +68,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
     // Parse the request body
     const body = JSON.parse(event.body || "{}");
-    const clientQuestion = body.clientQuestion;
+    clientQuestion = body.clientQuestion;
 
     // If clientQuestion is not provided, return an error
     if (!clientQuestion) {
@@ -115,6 +129,31 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     const parsed = JSON.parse(rawOutput);
     const answer = parsed.results?.[0]?.outputText?.trim() || "No response from model.";
 
+    // Log the response for debugging and for development purposes
+    console.log("Bedrock assistant response:", response);
+    console.log("Bedrock assistant answer:", parsed);
+
+    const requestId = response?.$metadata?.requestId;
+
+    if (!requestId) {
+      throw new Error("No request ID found in the response.");
+    }
+
+    // Store the Question and answer in DynamoDB
+    // There is data to store, store it in DynamoDB
+    await client.send(new PutItemCommand({
+      TableName: modelResponsesTable,
+      Item: marshall({
+        modelResponseId: Date.now().toString(),
+        requestId,
+        question: clientQuestion,
+        answer,
+        requestSuccess: true,
+        visibleOnUI: false
+      })
+    }));
+
+    // Return the response
     return {
       statusCode: 200,
       headers: {
@@ -127,6 +166,20 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
   } catch (err: any) {
     console.error("You application error:", err);
+
+    // Store failed request in DynamoDB for debugging and development purposes
+    await client.send(new PutItemCommand({
+      TableName: modelResponsesTable,
+      Item: marshall({
+        modelResponseId: Date.now().toString(),
+        requestId: "error",
+        question: clientQuestion,
+        answer: "error",
+        requestSuccess: false,
+        visibleOnUI: false
+      })
+    }));
+
     return {
       statusCode: 500,
       headers: {

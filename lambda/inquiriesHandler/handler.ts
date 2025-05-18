@@ -8,22 +8,27 @@ import { marshall } from "@aws-sdk/util-dynamodb";
 
 const client = new DynamoDBClient({ region: "us-east-1" });
 
+/**
+ * Lambda handler to store response messages and contacts information in DynamoDB.
+ * @param event 
+ * @returns 
+ */
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
 
-    const responseTable = process.env.RESPONSE_TABLE;
+    const inquiriesTable = process.env.RESPONSE_TABLE;
 
-    if (!responseTable) {
+    if (!inquiriesTable) {
       throw new Error("RESPONSE_TABLE environment variable is not set.");
     }
 
     // Parse the request body
     const body = JSON.parse(event.body || "{}");
-    const respMsg = body.msg;
-    const contactsInfo = body.contacts;
+    const userMessage = body.msg;
+    const userContactsInfo = body.contacts;
 
     // Return error resMsg or contactsInfo is not provided
-    if (!respMsg || !contactsInfo) {
+    if (!userMessage || !userContactsInfo) {
       return {
         statusCode: 400,
         headers: {
@@ -32,18 +37,18 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
           "Access-Control-Allow-Credentials": "true"
         },
         body: JSON.stringify({
-          error: "Please provide a response message and contacts information."
+          error: "Please provide a message and contacts information."
         })
       };
     }
 
     // There is data to store, store it in DynamoDB
     await client.send(new PutItemCommand({
-      TableName: responseTable,
+      TableName: inquiriesTable,
       Item: marshall({
-        respTimeStamp: Date.now().toString(),
-        contactsInfo,
-        respMsg
+        inquiriesTimeStamp: Date.now().toString(),
+        userContactsInfo,
+        userMessage
       })
     }));
 
@@ -56,7 +61,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        message: 'Response stored successfully',
+        message: 'Message stored successfully',
       }),
     };
 

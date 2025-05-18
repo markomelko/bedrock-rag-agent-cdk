@@ -15,18 +15,18 @@ export class BedrockRagAgentCdkStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // REST API Gateway to handle requests
+    // REST API Gateway to handle requests from the client
     const ragApi = new apigateway.RestApi(this, 'RagApi', {
       description: 'API to handle basic RAG requests and user responses',
     });
 
     // Resources for the ragApi
     const promptResource = ragApi.root.addResource('prompt');
-    const responseResource = ragApi.root.addResource('response'); // ** Optional **
+    const inquiriesResource = ragApi.root.addResource('inquiries'); // ** Optional **
 
     // API Key protection for accessing the endpoint
     const apiKey = new apigateway.ApiKey(this, 'RagApiKey', {
-      description: 'API Key to access /prompt endpoint',
+      description: 'API Key to access the Rag API',
       enabled: true,
     });
 
@@ -37,50 +37,59 @@ export class BedrockRagAgentCdkStack extends cdk.Stack {
     });
 
     // ** Optional **
-    // DynamoDB table to store user responses
-    const responseTable = new dynamodb.Table(this, 'ResponseTable', {
-      partitionKey: { name: 'respTimeStamp', type: dynamodb.AttributeType.STRING },
+    // DynamoDB table to store user inquiries
+    const inquiriesTable = new dynamodb.Table(this, 'InquiriesTable', {
+      partitionKey: { name: 'inquiriesTimeStamp', type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.DESTROY, // or RETAIN for production
+    });
+
+    // ** Optional **
+    // DynamoDB to store FM responses as ModelResponses
+    const modelResponsesTable = new dynamodb.Table(this, 'ModelResponsesTable', {
+      partitionKey: { name: 'modelResponseId', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy: cdk.RemovalPolicy.DESTROY, // or RETAIN for production
     });
 
     // Lambda function to fetch knowledge from S3 and query Bedrock
-    const requestHandler = new lambda.Function(this, 'PromptHandlerFunction', {
+    const promptHandler = new lambda.Function(this, 'PromptHandlerFunction', {
       runtime: lambda.Runtime.NODEJS_20_X,
       code: lambda.Code.fromAsset('lambda/promptHandler'),
       handler: 'handler.handler',
       environment: {
         S3_BUCKET: documentBucket.bucketName,
+        MODEL_RESPONSES_TABLE: modelResponsesTable.tableName,
       },
     });
 
     // ** Optional **
-    // Lambda function to handle responses and store them in DynamoDB
-    const responseHandler = new lambda.Function(this, 'ResponseHandlerFunction', {
+    // Lambda function to handle inquiries and store them in DynamoDB
+    const inquiriesHandler = new lambda.Function(this, 'InquiriesHandlerFunction', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      code: lambda.Code.fromAsset('lambda/responseHandler'),
+      code: lambda.Code.fromAsset('lambda/inquiriesHandler'),
       handler: 'handler.handler',
       environment: {
-        RESPONSE_TABLE: responseTable.tableName,
+        RESPONSE_TABLE: inquiriesTable.tableName,
       },
     });
 
     // Link API Gateway - Lambda function
-    const promptIntegration = new apigateway.LambdaIntegration(requestHandler);
-    const responseIntegration = new apigateway.LambdaIntegration(responseHandler); // ** Optional **
+    const promptIntegration = new apigateway.LambdaIntegration(promptHandler);
+    const inquiriesIntegration = new apigateway.LambdaIntegration(inquiriesHandler); // ** Optional **
 
     promptResource.addMethod('POST', promptIntegration, {
       apiKeyRequired: true,
     });
 
     // ** Optional **
-    responseResource.addMethod('POST', responseIntegration, {
+    inquiriesResource.addMethod('POST', inquiriesIntegration, {
       apiKeyRequired: true,
     });
 
     // Add CORS support for UI or cross-origin requests
     addCorsOptions(promptResource);
-    addCorsOptions(responseResource); // ** Optional **
+    addCorsOptions(inquiriesResource); // ** Optional **
 
     // Define throttling and attach the API key to the usage plan, this is for all endpoints.
     const usagePlan = ragApi.addUsagePlan('RagUsagePlan', {
@@ -97,14 +106,15 @@ export class BedrockRagAgentCdkStack extends cdk.Stack {
     usagePlan.addApiKey(apiKey);
 
     // Grant read-only access for Lambda to the S3 knowledge base
-    documentBucket.grantRead(requestHandler);
+    documentBucket.grantRead(promptHandler);
 
     // ** Optional **
-    // Grant write access for Lambda to the DynamoDB response table
-    responseTable.grantWriteData(responseHandler);
+    // Grant write access for Lambda to the DynamoDB inquiries table
+    inquiriesTable.grantWriteData(inquiriesHandler);
+    modelResponsesTable.grantWriteData(promptHandler);
 
     // Grant permissions for the Lambda function to invoke Bedrock models
-    requestHandler.addToRolePolicy(new iam.PolicyStatement({
+    promptHandler.addToRolePolicy(new iam.PolicyStatement({
       actions: ['bedrock:InvokeModel'],
       resources: [
         'arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-text-premier-v1:0'
